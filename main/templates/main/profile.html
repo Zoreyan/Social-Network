@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.name }}{% endblock %}
+{% block content %}
+
+
+
+<div class="h-screen bg-red-500 py-20 px-3">
+    
+    <div class="max-w-md mx-auto md:max-w-lg">
+        <div class="w-full">
+            <div class="bg-white p-3 rounded text-center py-5">
+                <div class="flex justify-center">
+                    <img class="rounded-full" src="{{user.avatar.url}}" width="100">
+                </div>
+                {% if user == request.user %}
+                    <a href="{% url 'update-user' %}">Edit</a>
+                {% endif %}
+                <div class="text-center">
+                    <h1 class="text-2xl mt-2">@{{user.username}}</h1>
+                    <div class="px-5 text-sm">
+                        <p class="text-justify">#{{user.bio}}</p>
+                    </div>
+                    <div class="flex justify-between mt-3 px-4">
+                        <div  class="flex flex-col">
+                            <span class="font-bold text-2xl">{{ total_subscribers }}</span>
+                            <span class="text-sm text-red-600">Followers</span>
+                        </div>
+                        
+                        <div  class="flex flex-col">
+                            <span class="font-bold text-2xl">{{ total_posts }}</span>
+                            <span class="text-sm text-red-600">Articles</span>
+                        </div>
+                        
+                        <div  class="flex flex-col">
+                            <span class="font-bold text-2xl">{{ total_subscribes }}</span>
+                            <span class="text-sm text-red-600">Followings</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-row px-4 mt-4">
+                        {% if user != request.user %}
+                        <form action="" method="post" id="SubscribeForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="follow" value="{{ profile.name }}">
+
+                            <button class="btn btn-primary">
+                                {%for k, v in subscribe.items%}
+                              {%if k == user%}
+                              {%if v%}
+                              unfollow
+                              {%else%}
+                              follow
+                              {%endif%}
+                              {%endif%}
+                              {%endfor%}
+                            </button>
+
+
+                        </form>
+                        {% endif %}
+                        
+                    </div>
+                    
+                    {% for subscriber in subscribers %}
+
+
+                <h4><a href="{% url 'profile' subscriber.name.name %}" >Follower: @{{ subscriber.name }}</a></h4>
+
+            {% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+<div class="album py-5 bg-light">
+    <div class="container">
+
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        {% for post in posts %}
+        <div class="col">
+          <div class="card shadow-sm">
+            <img src="{{ post.image.url }}" alt="" class="bd-placeholder-img card-img-top " width="100%" height="225">
+            
+            <div class="card-body">
+                <p class="card-text"><h5>{{ post.title|truncatewords:4 }}</h5></p>
+              <p class="card-text">{{ post.description|truncatewords:10 }}.</p>
+              <small class="text-muted">Posted {{ post.created|timesince }} ago</small> 
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                    {% if post.user == request.user or request.user.is_superuser %}
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Delete
+                      </button>
+                      <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Delete post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="" method="post">
+                                <div class="modal-body">
+                                        {% csrf_token %}
+                                        <p>Do you want to delete {{ post.title }}?</p> 
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <a type="submit" href="{% url 'delete-post' post.id %}" class="btn btn-danger">Delete</a>
+                                </form>
+                            </div>
+                        </div>
+                        </div>
+
+                    </div>
+
+
+                  <a href="{% url 'update-post' post.id %}" class="btn btn-info">Update</a>
+                    {% endif %}
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <h5>Empty</h5>
+        {% endfor %}
+      </div>
+    </div>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // отслеживаем событие отправки формы
+            $('#SubscribeForm').submit(function () {
+                // создаем AJAX-вызов
+                $.ajax({
+                    data: $(this).serialize(), // получаем данные формы
+                    type: $(this).attr('method'), // GET или POST
+                    // если успешно, то
+                    success: function () {
+                    },
+                    // если ошибка, то
+                    error: function (response) {
+                        // предупредим об ошибке
+                        alert(response.responseJSON.errors);
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            });
+        })
+    </script> -->
+  </div>
+{% endblock content %}

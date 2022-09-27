@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% endblock %}
+{% block content %}
+
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+          <img src="{{ post.image.url }}" alt="" class="bd-placeholder-img card-img-top " width="100%" height="225">
+          
+          <div class="card-body">
+              <p class="card-text"><h5>{{ post.title|truncatewords:4 }}</h5></p>
+            <p class="card-text">{{ post.description }}.</p>
+            <small class="text-muted">Posted {{ post.created|timesince }} ago</small> 
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <form method="POST" id="commentForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-outline mb-4">
+                      {{ form.text }}
+                      <label class="form-label" for="form3Example1cg">Comment</label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                      <button type="submit"
+                        class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">Create</button>
+                    </div>
+                  </form>
+      
+                </div>
+              </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="card-body"  id="comments">
+                    {% for comment in comments %}
+                    <p class="card-text"><h5>{{ comment.user.name }}</h5></p>
+                    <p class="card-text"> <a href="{% url 'profile' comment.user.name %}"><img src="{% if comment.user.avatar.url %}{{ comment.user.avatar.url }}{% else %}{% static 'main/images/avatar.svg' %}{% endif %}"  width="32" height="32" class="rounded-circle">@{{ comment.user.name }}</a></p>
+                    <p class="card-text">{{ comment.text }}</p><small class="text-muted">{{ comment.created|timesince }}</small> 
+                  <hr>
+                    {% if comment.user == request.user or request.user.is_superuser %}
+                    <a href="{% url 'delete-comment' comment.id %}" class="btn btn-danger btn-block btn-lg gradient-custom-4 text-body">Delete</a>
+
+                    {% endif %}
+                    {% endfor %}
+                </div>
+              </div>
+        </div>
+      </div>
+</div>
+
+
+
+<div class="container">
+    <h3>Related</h3>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      {% for related_post in related_posts %}
+      <div class="col">
+        <div class="card shadow-sm">
+          <img src="{{ related_post.image.url }}" alt="" class="bd-placeholder-img card-img-top " width="100%" height="225">
+          
+          <div class="card-body">
+              <p class="card-text"><h5>{{ related_post.title|truncatewords:4 }}</h5></p>
+            <p class="card-text">{{ related_post.description|truncatewords:10 }}.</p>
+            <small class="text-muted">Posted {{ related_post.created|timesince }} ago</small>
+            <p class="card-text"> <a href="{% url 'profile' related_post.user.name %}"><img src="{% if related_post.user.avatar.url %}{{ related_post.user.avatar.url }}{% else %}{% static 'main/images/avatar.svg' %}{% endif %}"  width="32" height="32" class="rounded-circle">@{{ post.user }}</a></p>
+            <small class="text-muted">Comments: {{ related_post.comment_set.count }}</small> 
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="btn-group">
+
+                
+              
+
+                  {% if related_post.user == request.user or related_post.user.is_superuser %}
+                  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                      Delete
+                    </button>
+                    <!-- Modal -->
+                  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">Delete post</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <form action="" method="post">
+                              <div class="modal-body">
+                                      {% csrf_token %}
+                                      <p>Do you want to delete {{ related_post.title }}?</p> 
+                              </div>
+                              <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <a type="submit" href="{% url 'delete-post' related_post.id %}" class="btn btn-danger">Delete</a>
+                              </form>
+                          </div>
+                      </div>
+                      </div>
+
+                  </div>
+
+
+                <a href="{% url 'update-post' related_post.id %}" class="btn btn-info">Update</a>
+
+                  {% endif %}
+                  <a href="{% url 'post' related_post.id %}" class="btn btn-primary">View</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <h5>Empty</h5>
+      {% endfor %}
+    </div>
+
+{% endblock %}

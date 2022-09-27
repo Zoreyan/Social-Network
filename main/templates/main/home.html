@@ -1,0 +1,96 @@
+<!-- HOME TEMPLATE -->
+{% extends 'base.html' %}
+{% block title %}Welcome-Senpai{% endblock %}
+    {% load static %}
+    {% block content %}
+    <main>
+    <div class="album py-5 bg-light">
+        <div class="container">
+    
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            {% for post in posts %}
+            <div class="col">
+              <div class="card shadow-sm">
+                <img src="{{ post.image.url }}" alt="" class="bd-placeholder-img card-img-top " width="100%" height="225">
+                
+                <div class="card-body">
+                    <p class="card-text"><h5>{{ post.title|truncatewords:4 }}</h5></p>
+                  <p class="card-text">{{ post.description|truncatewords:10 }}.</p>
+                  <small class="text-muted">Posted {{ post.created|timesince }} ago</small>
+                  <p class="card-text"> <a href="{% url 'profile' post.user.name %}"><img src="{% if post.user.avatar.url %}{{ post.user.avatar.url }}{% else %}{% static 'main/images/avatar.svg' %}{% endif %}"  width="32" height="32" class="rounded-circle">@{{ post.user }}</a></p>
+                  <small class="text-muted">Comments: {{ post.comment_set.count }}</small> 
+                  <small class="text-muted">Likes: {{ post.like_set.count }}</small> 
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+
+
+                      <form method="post">
+                            {% csrf_token %}
+
+                            <input type="hidden" name="like" value="{{ post.id }}">
+                      
+                            <button type="submit" class="btn btn-primary">
+                              {%for k, v in likes.items%}
+                              {%if k == post%}
+                              {%if v%}
+                              unlike
+                              {%else%}
+                              like
+                              {%endif%}
+                              {%endif%}
+                              {%endfor%}
+                            </button>
+                            
+                      </form>
+
+                        {% if post.user == request.user or request.user.is_superuser %}
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            Delete
+                          </button>
+                          <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Delete post</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form action="" method="post">
+                                    <div class="modal-body">
+                                            {% csrf_token %}
+                                            <p>Do you want to delete {{ post.title }}?</p> 
+                                    </div>
+                                    <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <a type="submit" href="{% url 'delete-post' post.id %}" class="btn btn-danger">Delete</a>
+                                    </form>
+                            
+                                </div>
+                            </div>
+                            </div>
+
+                        </div>
+                    
+                      <a href="{% url 'update-post' post.id %}" class="btn btn-info">Update</a>
+
+                        {% endif %}
+                        <a href="{% url 'post' post.id %}" class="btn btn-primary">View</a>
+
+
+
+                    </div>
+                    
+                  </div>
+                </div>
+              
+              </div>
+            </div>
+            {% empty %}
+            <h5>Empty</h5>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    
+    </main>
+    {% endblock %}
